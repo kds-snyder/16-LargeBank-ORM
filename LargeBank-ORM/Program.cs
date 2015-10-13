@@ -27,14 +27,15 @@ namespace LargeBank_ORM
                         Console.WriteLine("{0} {1} is not a customer of LargeBank",
                                             customerFirstName, customerLastName);
                     }
-
                 }
             }                       
 
             catch (Exception e)
             {
-                Console.WriteLine("An error occurred: {0}", e.Message); ;
+                Console.WriteLine("An error occurred: {0}", e.Message);
+                Console.ReadLine();
             }
+
         }
         // Prompt with message, and then 
         //  read name that should be first name followed by last name

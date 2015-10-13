@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,8 @@ namespace LargeBank_ORM.Classes
         // Return true if customer was found in DB, otherwise return false
         public static bool displayBankData(string custFirstName, string custLastName)
         {
-            const string lineSeparator = "--------------------------";
+            const string LINESEPARATOR = "--------------------------";
+            const string CURRENTCULTURE = "en-us";
             using (var db = new LargeBankEntities())
             {
                 // Get customer data (return if customer was not found)
@@ -25,9 +27,9 @@ namespace LargeBank_ORM.Classes
                 }
 
                 // Print the customer data
-                Console.WriteLine(lineSeparator);
+                Console.WriteLine(LINESEPARATOR);
                 Console.WriteLine("Customer: {0} {1} joined LargeBank on : {2}", 
-                    custFirstName, custLastName, customer.CreatedDate);
+                    customer.FirstName, customer.LastName, customer.CreatedDate);
                 Console.WriteLine("Address: \n" + customer.Address1);
                 if (customer.Address2 != null)
                 {
@@ -43,10 +45,16 @@ namespace LargeBank_ORM.Classes
                     Console.WriteLine(" " + customer.Zip);
                 }
 
+                // Set number format info to use negative sign instead of parentheses 
+                //  for negative numbers in the transaction data
+                var originalCultureInfo = new CultureInfo(CURRENTCULTURE);
+                var modifiedCultureInfo = (CultureInfo)originalCultureInfo.Clone();
+                modifiedCultureInfo.NumberFormat.CurrencyNegativePattern = 1;
+
                 // Print the accounts for this customer
                 foreach (var account in customer.Accounts)
                 {
-                    Console.WriteLine(lineSeparator);
+                    Console.WriteLine(LINESEPARATOR);
                     Console.WriteLine("--Balance for account# " + account.AccountNumber +
                             " is: " + account.Balance.ToString("C"));
 
@@ -55,7 +63,7 @@ namespace LargeBank_ORM.Classes
                     {
                         Console.WriteLine("---Transaction date: {0}, amount: {1}",
                                transaction.TransactionDate,
-                                transaction.Amount.ToString("C"));
+                               string.Format(modifiedCultureInfo, "{0:C}", transaction.Amount));
                     }
 
                     // Print the statement data for the account
