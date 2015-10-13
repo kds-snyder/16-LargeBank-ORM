@@ -10,76 +10,84 @@ namespace LargeBank_ORM.Classes
     public class LargeBankService
     {
 
-        // Display accounts, transactions, and statements for input customer
+        // Display accounts, transactions, and statements for customer 
+        //   with input first name & last name
+        //  (there may be more than one customer with the same first name and last name) 
         // Return true if customer was found in DB, otherwise return false
         public static bool displayBankData(string custFirstName, string custLastName)
         {
-            const string LINESEPARATOR = "--------------------------";
+            const string LINESEPARATOR = "--------------------------------------------------------";
             const string CURRENTCULTURE = "en-us";
             using (var db = new LargeBankEntities())
             {
                 // Get customer data (return if customer was not found)
-                var customer = db.Customers.Where(c => c.FirstName == custFirstName &&
-                                                    c.LastName == custLastName).FirstOrDefault();               
-                if (customer == null)
+                var customerList = db.Customers.Where(c => c.FirstName == custFirstName &&
+                                                    c.LastName == custLastName);
+
+                if (customerList.Count() == 0)
                 {
                     return false;
                 }
 
-                // Print the customer data
-                Console.WriteLine(LINESEPARATOR);
-                Console.WriteLine("Customer: {0} {1} joined LargeBank on : {2}", 
-                    customer.FirstName, customer.LastName, customer.CreatedDate);
-                Console.WriteLine("Address: \n" + customer.Address1);
-                if (customer.Address2 != null)
+                // Print data for each customer that was found in the DB
+                foreach (var customer in customerList)
                 {
-                    Console.WriteLine(customer.Address2);
-                }
-                Console.Write(customer.City + ", " + customer.State);
-                if (customer.Zip == null)
-                {
-                    Console.WriteLine("");
-                }
-                else
-                {
-                    Console.WriteLine(" " + customer.Zip);
-                }
-
-                // Set number format info to use negative sign instead of parentheses 
-                //  for negative numbers in the transaction data
-                var originalCultureInfo = new CultureInfo(CURRENTCULTURE);
-                var modifiedCultureInfo = (CultureInfo)originalCultureInfo.Clone();
-                modifiedCultureInfo.NumberFormat.CurrencyNegativePattern = 1;
-
-                // Print the accounts for this customer
-                foreach (var account in customer.Accounts)
-                {
+                    // Print the customer data 
                     Console.WriteLine(LINESEPARATOR);
-                    Console.WriteLine("--Balance for account# " + account.AccountNumber +
-                            " is: " + account.Balance.ToString("C"));
-
-                    // Print the transaction data for the account
-                    foreach (var transaction in account.Transactions)
+                    Console.WriteLine("Customer: {0} {1} joined LargeBank on: {2}",
+                        customer.FirstName, customer.LastName, customer.CreatedDate.ToShortDateString());
+                    Console.WriteLine("Address: \n" + customer.Address1);
+                    if (customer.Address2 != null)
                     {
-                        Console.WriteLine("---Transaction date: {0}, amount: {1}",
-                               transaction.TransactionDate,
-                               string.Format(modifiedCultureInfo, "{0:C}", transaction.Amount));
+                        Console.WriteLine(customer.Address2);
+                    }
+                    Console.Write(customer.City + ", " + customer.State);
+                    if (customer.Zip == null)
+                    {
+                        Console.WriteLine("");
+                    }
+                    else
+                    {
+                        Console.WriteLine(" " + customer.Zip);
                     }
 
-                    // Print the statement data for the account
-                    foreach (var statement in account.Statements)
+                    // Set number format info to use negative sign instead of parentheses 
+                    //  for negative numbers in the transaction data
+                    var originalCultureInfo = new CultureInfo(CURRENTCULTURE);
+                    var modifiedCultureInfo = (CultureInfo)originalCultureInfo.Clone();
+                    modifiedCultureInfo.NumberFormat.CurrencyNegativePattern = 1;
+
+                    // Print data for each account belonging to the customer
+                    foreach (var account in customer.Accounts)
                     {
-                        Console.WriteLine("---Statement start date: {0}, end date: {1}",
-                               statement.StartDate,
-                                statement.EndDate);
-                        if (statement.CreatedDate != null)
+                        Console.WriteLine(LINESEPARATOR);
+                        Console.WriteLine("--Balance for account# " + account.AccountNumber +
+                                " is: " + account.Balance.ToString("C"));
+
+                        // Print the transaction data for the account
+                        foreach (var transaction in account.Transactions)
                         {
-                            Console.WriteLine("----Created on: ", statement.CreatedDate);
+                            Console.WriteLine("---Transaction date: {0}, amount: {1}",
+                                   transaction.TransactionDate.ToShortDateString(),
+                                   string.Format(modifiedCultureInfo, "{0:C}", transaction.Amount));
+                        }
+
+                        // Print the statement data for the account
+                        foreach (var statement in account.Statements)
+                        {
+                            Console.WriteLine("---Statement start date: {0}, end date: {1}",
+                                   statement.StartDate.ToShortDateString(),
+                                    statement.EndDate.ToShortDateString());
+                            if (statement.CreatedDate != null)
+                            {
+                                Console.WriteLine("----Created on: ", 
+                                    statement.CreatedDate.Value.ToShortDateString());
+                            }
                         }
                     }
-                }                   
+                }
             }
-              return true;
+            return true;
         }
     }
 }
