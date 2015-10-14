@@ -17,7 +17,8 @@ namespace LargeBank_ORM.Classes
         public static bool displayBankData(string custFirstName, string custLastName)
         {
             const string LINESEPARATOR = "--------------------------------------------------------";
-            const string CURRENTCULTURE = "en-us";
+            const string CURRENTCULTURE = "en-us"; // for formatting negative currency values
+
             using (var db = new LargeBankEntities())
             {
                 // Get customer data (return if customer was not found)
@@ -63,7 +64,7 @@ namespace LargeBank_ORM.Classes
                         Console.WriteLine(LINESEPARATOR);
                         Console.WriteLine("--Balance for account# " + account.AccountNumber +
                                 " is: " + account.Balance.ToString("C"));
-
+                        
                         // Print the transaction data for the account
                         foreach (var transaction in account.Transactions)
                         {
@@ -85,9 +86,150 @@ namespace LargeBank_ORM.Classes
                             }
                         }
                     }
+                    Console.WriteLine(LINESEPARATOR + "\n");
                 }
             }
             return true;
+        }
+
+        // Add customer to database, using input to fill the record fields
+        // Set created date to current date
+        // After writing, get the customer ID, and return it
+        // If read/write to DB is not successful, throw exception to caller
+        public static int addCustomer(string firstName, string lastName, string address1,
+                                        string address2, string city, string state, string zip)
+        {            
+            try
+            {
+                using (var db = new LargeBankEntities())
+                {
+                    // Set up the customer record
+                    Customer c = new Customer();
+                    DateTime curDate = DateTime.Now;
+                    c.CreatedDate = curDate;                   
+                    c.FirstName = firstName;
+                    c.LastName = lastName;
+                    c.Address1 = address1;
+                    c.Address2 = address2;
+                    c.City = city;
+                    c.State = state;
+                    c.Zip = zip;
+
+                    //Console.WriteLine("Added first name: {0}, last name: {0}, created: {2}",
+                    //                    c.FirstName, c.LastName, curDate);
+
+                    // Add the customer and save the changes to the DB
+                    db.Customers.Add(c);
+                    db.SaveChanges();
+
+                    // Get the customer ID
+                    return getCustomerID(c.FirstName, c.LastName, curDate);
+                }                
+            }
+
+            // Let calling method handle exception if it occurs
+            catch (Exception)
+            {
+                throw;                
+            }
+        }
+
+        // Return customer ID of customer matching input parameters 
+        //  (compare year, month, and day of createdDate)       
+        // If customer is not found, set returned ID to 0
+        // If read to DB is not successful, throw exception to caller
+        public static int getCustomerID(string firstName, string lastName, DateTime createdDate)
+        {
+            try
+            {
+                using (var db = new LargeBankEntities())
+                {
+                    /*
+                    //test
+                    var customerList = db.Customers.Where
+                         (c => c.FirstName == firstName &&
+                                    c.LastName == lastName);
+                    if (customerList.Count() == 0)
+                    {
+                        Console.WriteLine("Didn't find {0} {1}", firstName, lastName);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Found {0} {1}", firstName, lastName);
+                        foreach (var cust in customerList)
+                        {
+                            Console.WriteLine("DB createdate: {0}, input createdate: {1}",
+                                cust.CreatedDate, createdDate);
+                            Console.WriteLine("Compare DB createdate to input createdate: {0}",
+                                DateTime.Compare(cust.CreatedDate, createdDate));
+                            Console.WriteLine("Compare TO DB createdate to input createdate: {0}",
+                                cust.CreatedDate.CompareTo(createdDate));
+                            Console.WriteLine("DB createdate == input createdate: {0}",
+                                cust.CreatedDate ==createdDate);
+
+                            DateTime date1 = DateTime.Now;
+                            DateTime date2 = date1;
+                            Console.WriteLine("Compare date1 to date2: {0}",
+                                DateTime.Compare(date1, date2));
+                            Console.WriteLine("Compare TO date1 to date2: {0}",
+                                date1.CompareTo(date2));
+
+                        }
+                    }
+                    //test
+                    */
+
+                    // Get customer data 
+                    var customer = db.Customers.Where
+                        (c => c.FirstName == firstName && c.LastName == lastName &&
+                              c.CreatedDate.Year == createdDate.Year &&
+                              c.CreatedDate.Month == createdDate.Month &&
+                              c.CreatedDate.Day == createdDate.Day).SingleOrDefault();
+
+                    // Return ID 0 if not found
+                    if (customer == null)
+                    {
+                        return 0;
+                    }
+
+                    // Return customer ID
+                    return customer.CustomerId;
+                }
+            }
+
+            // Let calling method handle exception if it occurs
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        // Add account to database, using input to fill the record fields
+        // If write to DB is not successful, throw exception to caller
+        public static void addAccount(int CustomerId, string accountNumber, decimal balance)
+        {
+            try
+            {
+                using (var db = new LargeBankEntities())
+                {
+                    // Set up the account record
+                    Account acct = new Account();
+                    acct.CustomerId = CustomerId;
+                    acct.CreatedDate = DateTime.Now;
+                    acct.AccountNumber = accountNumber;
+                    acct.Balance = balance;                  
+
+                    // Add the customer and save the changes to the DB
+                    db.Accounts.Add(acct);
+                    db.SaveChanges();
+               }
+            }
+
+            // Let calling method handle exception if it occurs
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }
