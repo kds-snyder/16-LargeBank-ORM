@@ -197,12 +197,13 @@ namespace LargeBank_ORM
                     }
                     else
                     {
-                        Console.WriteLine("Please enter a valid number");
+                        Console.WriteLine("Please enter a positive number up to " +
+                                    (Decimal.MaxValue).ToString("#,##0"));
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Please enter a positive number less than " +
+                    Console.WriteLine("Please enter a positive number up to " +
                                     (Decimal.MaxValue).ToString("#,##0"));
                 }
             }
