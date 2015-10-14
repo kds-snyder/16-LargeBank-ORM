@@ -58,7 +58,13 @@ namespace LargeBank_ORM
             //  and add to DB
             if (customerId != 0)
             {
-                addAccountData(customerId);
+                int accountId = addAccountData(customerId);
+                //if (accountId != 0)
+                //{
+                    //Console.WriteLine("Account ID: {0}", accountId);
+                    //addTransactionData(accountId);
+                //}
+
                 Console.WriteLine("{0} {1} was added successfully to LargeBank\n",
                     custFirstName, custLastName);
             }
@@ -148,7 +154,9 @@ namespace LargeBank_ORM
 
         // Get the account data input from the user, 
         //  and write it to the DB with the input customer ID
-        public static void addAccountData(int customerId)
+        // After writing, get the account ID and return it
+        // If no account was added, return 0        
+        public static int addAccountData(int customerId)
         {
             Console.WriteLine("Enter the account data:");
 
@@ -158,6 +166,11 @@ namespace LargeBank_ORM
             {
                 decimal accountBalance = getInputPosDecNum("Enter the account balance: $");
                 LargeBankService.addAccount(customerId, accountNumber, accountBalance);
+                return LargeBankService.getAccountID(customerId, accountNumber);
+            }
+            else
+            {
+                return 0;
             }
         }
 

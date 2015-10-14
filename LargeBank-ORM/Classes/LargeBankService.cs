@@ -144,41 +144,8 @@ namespace LargeBank_ORM.Classes
             {
                 using (var db = new LargeBankEntities())
                 {
-                    /*
-                    //test
-                    var customerList = db.Customers.Where
-                         (c => c.FirstName == firstName &&
-                                    c.LastName == lastName);
-                    if (customerList.Count() == 0)
-                    {
-                        Console.WriteLine("Didn't find {0} {1}", firstName, lastName);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Found {0} {1}", firstName, lastName);
-                        foreach (var cust in customerList)
-                        {
-                            Console.WriteLine("DB createdate: {0}, input createdate: {1}",
-                                cust.CreatedDate, createdDate);
-                            Console.WriteLine("Compare DB createdate to input createdate: {0}",
-                                DateTime.Compare(cust.CreatedDate, createdDate));
-                            Console.WriteLine("Compare TO DB createdate to input createdate: {0}",
-                                cust.CreatedDate.CompareTo(createdDate));
-                            Console.WriteLine("DB createdate == input createdate: {0}",
-                                cust.CreatedDate ==createdDate);
-
-                            DateTime date1 = DateTime.Now;
-                            DateTime date2 = date1;
-                            Console.WriteLine("Compare date1 to date2: {0}",
-                                DateTime.Compare(date1, date2));
-                            Console.WriteLine("Compare TO date1 to date2: {0}",
-                                date1.CompareTo(date2));
-
-                        }
-                    }
-                    //test
-                    */
-
+                    //testGetCustomerID(firstName, lastName, createdDate);
+                                       
                     // Get customer data 
                     var customer = db.Customers.Where
                         (c => c.FirstName == firstName && c.LastName == lastName &&
@@ -194,6 +161,83 @@ namespace LargeBank_ORM.Classes
 
                     // Return customer ID
                     return customer.CustomerId;
+                }
+            }
+
+            // Let calling method handle exception if it occurs
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public static void testGetCustomerID(string firstName, string lastName, DateTime createdDate)
+        {
+            using (var db = new LargeBankEntities())
+            {
+                var customerList = db.Customers.Where
+                         (c => c.FirstName == firstName &&
+                                    c.LastName == lastName);
+                if (customerList.Count() == 0)
+                {
+                    Console.WriteLine("Didn't find {0} {1}", firstName, lastName);
+                }
+                else
+                {
+                    Console.WriteLine("Found {0} {1}", firstName, lastName);
+                    foreach (var cust in customerList)
+                    {
+                        Console.WriteLine("DB createdate: {0}, input createdate: {1}",
+                            cust.CreatedDate, createdDate);
+                        Console.WriteLine("Compare DB createdate to input createdate: {0}",
+                            DateTime.Compare(cust.CreatedDate, createdDate));
+                        Console.WriteLine("Compare TO DB createdate to input createdate: {0}",
+                            cust.CreatedDate.CompareTo(createdDate));
+                        Console.WriteLine("DB createdate == input createdate: {0}",
+                            cust.CreatedDate == createdDate);
+
+                        DateTime date1 = DateTime.Now;
+                        DateTime date2 = date1;
+                        Console.WriteLine("Compare date1 to date2: {0}",
+                            DateTime.Compare(date1, date2));
+                        Console.WriteLine("Compare TO date1 to date2: {0}",
+                            date1.CompareTo(date2));
+
+                    }
+                }
+            }
+        }
+
+        // Return account ID of account matching input parameters 
+        // If account is not found, set returned ID to 0
+        // If read to DB is not successful, throw exception to caller
+        public static int getAccountID(int custId, string accountNumber)
+        {
+            try
+            {
+                using (var db = new LargeBankEntities())
+                {                                   
+                    // Get customer data 
+                    var customer = db.Customers.Where
+                        (c => c.CustomerId == custId).SingleOrDefault();
+                    // Return ID 0 if not found
+                    if (customer == null)
+                    {
+                        return 0;
+                    }
+
+                    // Get account ID matching account number
+                    var account = customer.Accounts.Where
+                        (a => a.AccountNumber == accountNumber).SingleOrDefault();
+                    if (account == null)
+                    {
+                        return 0;
+                    }
+                    else
+                    {
+                        return account.AccountId;
+                    }
+                    
                 }
             }
 
